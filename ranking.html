@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CCL Ranking</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="container header-inner">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>CCL Official</h1>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="index.html">TOP</a>
+        <a class="active" href="ranking.html">RANKING</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="badge"><span class="dot"></span> Official Ranking</div>
+      <h2>ランキング</h2>
+      <p>
+        スプレッドシート（公開用）と連動して自動更新されます。<br />
+        表示が「読み込み失敗」になる場合は、次にGitHub Pagesで公開します。
+      </p>
+    </section>
+
+    <section class="grid">
+      <div class="card" style="grid-column: span 12;">
+        <h3>TOP 10</h3>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Wins</th>
+              <th>Losses</th>
+              <th>Win%</th>
+            </tr>
+          </thead>
+
+          <tbody id="ranking-body">
+            <tr><td colspan="5">読み込み中...</td></tr>
+          </tbody>
+        </table>
+
+        <p id="ranking-note" style="margin-top:12px; color: var(--muted);">
+          ※ 公開用シートのデータを表示しています。
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">© CCL Official League</div>
+  </footer>
+
+  <script>
+    // ✅ CSVとして取得できるURLに修正（pubhtmlではなく output=csv）
+    // gidが違う場合だけ数字を変えてOK
+    const CSV_URL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vSdXvohXC-6MPzzGi11aSPM_LazB6OkKRyyW8_mIFR8NPY6YEuMyIsgqlPQc7LJj26RSR9TG5HSI83-/pub?gid=0&single=true&output=csv";
+
+    // CSVをしっかりパース（ダブルクォート内のカンマも対応）
+    function parseCSV(text) {
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const next = text[i + 1];
+
+        if (ch === '"' ) {
+          if (inQuotes && next === '"') {
+            // "" -> "
+            cell += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (ch === "," && !inQuotes) {
+          row.push(cell.trim());
+          cell = "";
+        } else if ((ch === "\n" || ch === "\r") && !inQuotes) {
+          if (ch === "\r" && next === "\n") i++;
+          row.push(cell.trim());
+          rows.push(row);
+          row = [];
+          cell = "";
+        } else {
+          cell += ch;
+        }
+      }
+      // last cell
+      if (cell.length > 0 || row.length > 0) {
+        row.push(cell.trim());
+        rows.push(row);
+      }
+      // 両端の " を外す（必要な時だけ）
+      return rows.map(r => r.map(c => c.replace(/^"|"$/g, "").trim()));
+    }
+
+    async function loadRanking() {
+      const tbody = document.getElementById("ranking-body");
+      const note = document.getElementById("ranking-note");
+
+      try {
+        const res = await fetch(CSV_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error("CSV取得に失敗しました（公開設定を確認）");
+
+        const csvText = await res.text();
+        const rows = parseCSV(csvText);
+
+        // 1行目はヘッダー想定
+        const data = rows.slice(1).filter(r => r.join("").trim() !== "");
+
+        tbody.innerHTML = "";
+
+        // 想定：A Rank / B PlayerID(orName) / C Wins / D Losses / E WinRate / (F UpdatedAt 任意)
+        data.slice(0, 10).forEach((r, i) => {
+          const rank = r[0] || String(i + 1);
+          const player = r[1] || "";
+          const wins = r[2] || "";
+          const losses = r[3] || "";
+          const winrate = r[4] || "";
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${escapeHtml(rank)}</td>
+            <td>${escapeHtml(player)}</td>
+            <td>${escapeHtml(wins)}</td>
+            <td>${escapeHtml(losses)}</td>
+            <td>${escapeHtml(winrate)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        if (tbody.children.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="5">データがありません</td></tr>`;
+          note.textContent = "※ 公開用シートにデータがありません。";
+          return;
+        }
+
+        // ✅ UpdatedAt がある時だけ表示（無くても落ちない）
+        const updatedAt = (data[0] && data[0][5]) ? data[0][5] : "";
+        note.textContent = updatedAt
+          ? `※ 公開用シートのランキングを自動表示しています（更新：${updatedAt}）`
+          : "※ 公開用シートのランキングを自動表示しています。";
+
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="5">読み込み失敗：${escapeHtml(e.message)}</td></tr>`;
+        note.textContent = "※ ローカル（file://）で開いていると取得に失敗する場合があります。";
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    loadRanking();
+  </script>
+</body>
+</html>
