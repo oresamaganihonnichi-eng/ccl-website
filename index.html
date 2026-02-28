@@ -3,53 +3,171 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CCL Official</title>
+  <title>CCL Official — Calligraphy Championship League</title>
+  <meta name="description" content="CCL（Calligraphy Championship League）公式サイト。ランキングと公式戦績を公開し、字を競技として確立する。" />
+  <meta name="theme-color" content="#0b1020" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+  <!-- Premium Background (shared) -->
+  <div class="bg" aria-hidden="true">
+    <div class="bg-aurora"></div>
+    <div class="bg-grid"></div>
+    <div class="bg-noise"></div>
+    <div class="bg-vignette"></div>
+  </div>
+
   <header class="header">
     <div class="container header-inner">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <div>
-          <h1>CCL Official</h1>
-        </div>
-      </div>
+      <a class="brand" href="index.html" aria-label="CCL Official">
+        <span class="logo" aria-hidden="true">
+          <span class="logo-core"></span>
+        </span>
+        <span class="brand-text">
+          <span class="brand-title">CCL Official</span>
+          <span class="brand-sub">Calligraphy Championship League</span>
+        </span>
+      </a>
 
-      <nav class="nav">
-        <a class="active" href="index.html">TOP</a>
-        <a href="ranking.html">RANKING</a>
+      <nav class="nav" aria-label="Primary navigation">
+        <a class="nav-link active" href="index.html">TOP</a>
+        <a class="nav-link" href="ranking.html">RANKING</a>
       </nav>
     </div>
   </header>
 
-  <main class="container">
+  <main class="container main">
     <section class="hero">
-      <div class="badge"><span class="dot"></span> Calligraphy Championship League</div>
-      <h2>頂点を決める。</h2>
-      <p>
+      <div class="hero-top">
+        <div class="badge">
+          <span class="badge-dot" aria-hidden="true"></span>
+          OFFICIAL LEAGUE • TRANSPARENT RESULTS
+        </div>
+
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="ranking.html">
+            <span class="btn-icon" aria-hidden="true">🏆</span>
+            ランキングを見る
+            <span class="btn-arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="btn btn-ghost" href="ranking.html">
+            最新の更新を見る <span class="btn-arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+
+      <h1 class="hero-title">頂点を決める。</h1>
+
+      <p class="hero-lead">
         CCLは、字で人生を変えるきっかけを作るための公式リーグ。<br />
         ランキングと公式戦績を、誰でも見られる形で公開する。
       </p>
+
+      <div class="hero-divider" aria-hidden="true"></div>
+
+      <div class="hero-metrics" role="list" aria-label="League highlights">
+        <div class="metric" role="listitem">
+          <div class="metric-k">透明性</div>
+          <div class="metric-v">公開データ連動</div>
+          <div class="metric-s">集計結果を誰でも検証可能</div>
+        </div>
+        <div class="metric" role="listitem">
+          <div class="metric-k">威厳</div>
+          <div class="metric-v">公式戦績</div>
+          <div class="metric-s">勝敗と証跡を蓄積し、歴史になる</div>
+        </div>
+        <div class="metric" role="listitem">
+          <div class="metric-k">競技性</div>
+          <div class="metric-v">ランキング制度</div>
+          <div class="metric-s">実力が可視化され、積み上がる</div>
+        </div>
+      </div>
     </section>
 
     <section class="grid">
-      <div class="card">
-        <h3>RANKING</h3>
-        <p>公式ランキング。勝利数・勝率・試合数で並ぶ。</p>
-        <a class="btn" href="ranking.html">ランキングを見る →</a>
-      </div>
+      <article class="card card-glow">
+        <div class="card-head">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M7 4h10v7a5 5 0 0 1-10 0V4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M17 7h2a2 2 0 0 1 0 4h-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M7 7H5a2 2 0 0 0 0 4h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h2 class="card-title">RANKING</h2>
+        </div>
+        <p class="card-text">公式ランキング。勝利数・敗北数・勝率・更新日時を公開。</p>
+        <a class="btn btn-secondary" href="ranking.html">
+          ランキングを見る <span class="btn-arrow" aria-hidden="true">→</span>
+        </a>
+      </article>
 
-      <div class="card">
-        <h3>MISSION</h3>
-        <p>「字で人生を変えるきっかけを作る」。CCLは競技として、権威を積み上げる。</p>
-        <a class="btn" href="ranking.html">最新の結果を見る →</a>
+      <article class="card">
+        <div class="card-head">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 2l8 4v6c0 5-3.4 9.4-8 10-4.6-.6-8-5-8-10V6l8-4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M9 12l2 2 4-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2 class="card-title">MISSION</h2>
+        </div>
+        <p class="card-text">「字で人生を変えるきっかけを作る」。CCLは競技として権威を積み上げる。</p>
+        <a class="btn btn-secondary" href="ranking.html">
+          最新の結果を見る <span class="btn-arrow" aria-hidden="true">→</span>
+        </a>
+      </article>
+    </section>
+
+    <section class="banner">
+      <div class="banner-inner">
+        <div class="banner-left">
+          <div class="kicker">CCL OFFICIAL</div>
+          <div class="banner-title">競技団体としての格を、Webから。</div>
+          <div class="banner-sub">データ公開 × デザイン統一で「公式感」を作る。</div>
+        </div>
+        <div class="banner-right">
+          <a class="btn btn-primary" href="ranking.html">
+            ランキングへ <span class="btn-arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <div class="container">© CCL Official League</div>
+    <div class="container footer-inner">
+      <div class="footer-left">
+        <div class="footer-brand">© CCL Official League</div>
+        <div class="footer-note">Hosted on GitHub Pages.</div>
+      </div>
+      <div class="footer-right">
+        <a class="footer-link" href="index.html">TOP</a>
+        <a class="footer-link" href="ranking.html">RANKING</a>
+      </div>
+    </div>
   </footer>
+
+  <script>
+    // Simple reveal animation (no library)
+    (function(){
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) return;
+
+      const els = document.querySelectorAll('.hero, .card, .banner');
+      const obs = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add('reveal');
+            obs.unobserve(e.target);
+          }
+        }
+      }, { threshold: 0.12 });
+
+      els.forEach(el => obs.observe(el));
+    })();
+  </script>
 </body>
 </html>

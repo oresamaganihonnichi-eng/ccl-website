@@ -3,177 +3,462 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CCL Ranking</title>
+  <title>CCL Official — Ranking</title>
+  <meta name="description" content="CCL公式ランキング。勝利数・敗北数・勝率・更新日時を公開。" />
+  <meta name="theme-color" content="#0b1020" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
+  <!-- Premium Background (shared) -->
+  <div class="bg" aria-hidden="true">
+    <div class="bg-aurora"></div>
+    <div class="bg-grid"></div>
+    <div class="bg-noise"></div>
+    <div class="bg-vignette"></div>
+  </div>
+
   <header class="header">
     <div class="container header-inner">
-      <div class="brand">
-        <div class="logo" aria-hidden="true"></div>
-        <div>
-          <h1>CCL Official</h1>
-        </div>
-      </div>
+      <a class="brand" href="index.html" aria-label="CCL Official">
+        <span class="logo" aria-hidden="true">
+          <span class="logo-core"></span>
+        </span>
+        <span class="brand-text">
+          <span class="brand-title">CCL Official</span>
+          <span class="brand-sub">Calligraphy Championship League</span>
+        </span>
+      </a>
 
-      <nav class="nav">
-        <a href="index.html">TOP</a>
-        <a class="active" href="ranking.html">RANKING</a>
+      <nav class="nav" aria-label="Primary navigation">
+        <a class="nav-link" href="index.html">TOP</a>
+        <a class="nav-link active" href="ranking.html">RANKING</a>
       </nav>
     </div>
   </header>
 
-  <main class="container">
-    <section class="hero">
-      <div class="badge"><span class="dot"></span> Official Ranking</div>
-      <h2>ランキング</h2>
-      <p>
-        スプレッドシート（公開用）と連動して自動更新されます。<br />
-        表示が「読み込み失敗」になる場合は、次にGitHub Pagesで公開します。
+  <main class="container main">
+    <section class="pagehead">
+      <div class="pagehead-top">
+        <div class="badge">
+          <span class="badge-dot" aria-hidden="true"></span>
+          OFFICIAL RANKINGS
+        </div>
+
+        <div class="pagehead-right">
+          <div class="meta">
+            <span class="meta-k">最終取得</span>
+            <span class="meta-v" id="fetchedAt">--</span>
+          </div>
+          <div class="meta">
+            <span class="meta-k">件数</span>
+            <span class="meta-v" id="rowCount">--</span>
+          </div>
+        </div>
+      </div>
+
+      <h1 class="page-title">Ranking</h1>
+      <p class="page-lead">
+        公開シートと連動した公式ランキング。検索・ソートで素早く確認できます。
       </p>
+
+      <div class="controlbar">
+        <div class="control">
+          <label class="control-label" for="searchInput">検索</label>
+          <input id="searchInput" class="input" type="text" placeholder="選手IDを入力（例：A001）" autocomplete="off" />
+        </div>
+
+        <div class="control">
+          <label class="control-label" for="sortSelect">並び替え</label>
+          <select id="sortSelect" class="select">
+            <option value="順位:asc">順位（昇順）</option>
+            <option value="勝利数:desc">勝利数（多い順）</option>
+            <option value="敗北数:asc">敗北数（少ない順）</option>
+            <option value="勝率:desc">勝率（高い順）</option>
+            <option value="更新日時:desc">更新日時（新しい順）</option>
+          </select>
+        </div>
+
+        <div class="control control-inline">
+          <button id="resetBtn" class="btn btn-ghost btn-small" type="button">
+            リセット <span class="btn-arrow" aria-hidden="true">↺</span>
+          </button>
+        </div>
+      </div>
     </section>
 
-    <section class="grid">
-      <div class="card" style="grid-column: span 12;">
-        <h3>TOP 10</h3>
+    <section class="tablecard" aria-label="Ranking table">
+      <div class="tablecard-head">
+        <div class="kicker">CCL OFFICIAL DATA</div>
+        <div class="tablecard-sub" id="note">取得中…</div>
+      </div>
 
-        <table class="table">
+      <div class="tablewrap" role="region" aria-label="Scrollable table">
+        <table class="table" id="rankTable">
           <thead>
             <tr>
-              <th>Rank</th>
-              <th>Player</th>
-              <th>Wins</th>
-              <th>Losses</th>
-              <th>Win%</th>
+              <th data-key="順位" class="col-rank">順位</th>
+              <th data-key="選手ID" class="col-id">選手ID</th>
+              <th data-key="勝利数" class="col-num">勝利</th>
+              <th data-key="敗北数" class="col-num">敗北</th>
+              <th data-key="勝率" class="col-rate">勝率</th>
+              <th data-key="更新日時" class="col-time">更新</th>
             </tr>
           </thead>
-
-          <tbody id="ranking-body">
-            <tr><td colspan="5">読み込み中...</td></tr>
+          <tbody id="rankTbody">
+            <!-- rows injected -->
           </tbody>
         </table>
+      </div>
+    </section>
 
-        <p id="ranking-note" style="margin-top:12px; color: var(--muted);">
-          ※ 公開用シートのデータを表示しています。
-        </p>
+    <section class="hint">
+      <div class="hint-inner">
+        <div class="hint-title">見方</div>
+        <div class="hint-text">
+          勝率は「勝利数 ÷（勝利数+敗北数）」で算出。更新日時は公開シートの値を表示しています。
+        </div>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    <div class="container">© CCL Official League</div>
+    <div class="container footer-inner">
+      <div class="footer-left">
+        <div class="footer-brand">© CCL Official League</div>
+        <div class="footer-note">Hosted on GitHub Pages.</div>
+      </div>
+      <div class="footer-right">
+        <a class="footer-link" href="index.html">TOP</a>
+        <a class="footer-link" href="ranking.html">RANKING</a>
+      </div>
+    </div>
   </footer>
 
   <script>
-    // ✅ CSVとして取得できるURLに修正（pubhtmlではなく output=csv）
-    // gidが違う場合だけ数字を変えてOK
-    const CSV_URL =
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vSdXvohXC-6MPzzGi11aSPM_LazB6OkKRyyW8_mIFR8NPY6YEuMyIsgqlPQc7LJj26RSR9TG5HSI83-/pub?gid=0&single=true&output=csv";
+    // ============================
+    // 1) Set your CSV URL here
+    // ============================
+    const CSV_URL = "PASTE_YOUR_PUBLIC_CSV_URL_HERE";
 
-    // CSVをしっかりパース（ダブルクォート内のカンマも対応）
-    function parseCSV(text) {
-      const rows = [];
-      let row = [];
-      let cell = "";
-      let inQuotes = false;
+    // Expected header names in Japanese:
+    // 「順位 / 選手ID / 勝利数 / 敗北数 / 勝率 / 更新日時」
+    // If your sheet differs, adjust HEADER_MAP below.
+    const HEADER_MAP = {
+      rank: ["順位", "Rank"],
+      playerId: ["選手ID", "選手Id", "PlayerID", "ID"],
+      wins: ["勝利数", "勝利", "Win", "Wins"],
+      losses: ["敗北数", "敗北", "Loss", "Losses"],
+      winRate: ["勝率", "WinRate", "勝率(%)"],
+      updatedAt: ["更新日時", "更新", "Updated", "updated_at"]
+    };
 
-      for (let i = 0; i < text.length; i++) {
-        const ch = text[i];
-        const next = text[i + 1];
+    const els = {
+      fetchedAt: document.getElementById("fetchedAt"),
+      rowCount: document.getElementById("rowCount"),
+      note: document.getElementById("note"),
+      tbody: document.getElementById("rankTbody"),
+      search: document.getElementById("searchInput"),
+      sort: document.getElementById("sortSelect"),
+      reset: document.getElementById("resetBtn"),
+    };
 
-        if (ch === '"' ) {
-          if (inQuotes && next === '"') {
-            // "" -> "
-            cell += '"';
-            i++;
-          } else {
-            inQuotes = !inQuotes;
-          }
-        } else if (ch === "," && !inQuotes) {
-          row.push(cell.trim());
-          cell = "";
-        } else if ((ch === "\n" || ch === "\r") && !inQuotes) {
-          if (ch === "\r" && next === "\n") i++;
-          row.push(cell.trim());
-          rows.push(row);
-          row = [];
-          cell = "";
-        } else {
-          cell += ch;
-        }
-      }
-      // last cell
-      if (cell.length > 0 || row.length > 0) {
-        row.push(cell.trim());
-        rows.push(row);
-      }
-      // 両端の " を外す（必要な時だけ）
-      return rows.map(r => r.map(c => c.replace(/^"|"$/g, "").trim()));
+    let allRows = [];
+    let viewRows = [];
+
+    function nowJSTString() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mm = String(d.getMinutes()).padStart(2,'0');
+      return `${y}-${m}-${day} ${hh}:${mm} JST`;
     }
 
-    async function loadRanking() {
-      const tbody = document.getElementById("ranking-body");
-      const note = document.getElementById("ranking-note");
+    function csvParse(text) {
+      // Robust CSV parser (handles quotes/newlines/commas)
+      const rows = [];
+      let cur = [];
+      let val = "";
+      let inQuotes = false;
+
+      for (let i=0; i<text.length; i++){
+        const c = text[i];
+        const n = text[i+1];
+
+        if (c === '"' && inQuotes && n === '"'){
+          val += '"'; i++;
+          continue;
+        }
+        if (c === '"'){
+          inQuotes = !inQuotes;
+          continue;
+        }
+        if (c === ',' && !inQuotes){
+          cur.push(val);
+          val = "";
+          continue;
+        }
+        if ((c === '\n' || c === '\r') && !inQuotes){
+          if (c === '\r' && n === '\n') i++;
+          cur.push(val);
+          val = "";
+          // skip empty last line
+          if (cur.length > 1 || (cur.length === 1 && cur[0] !== "")) rows.push(cur);
+          cur = [];
+          continue;
+        }
+        val += c;
+      }
+      // last cell
+      cur.push(val);
+      if (cur.length > 1 || (cur.length === 1 && cur[0] !== "")) rows.push(cur);
+
+      // trim BOM
+      if (rows.length && rows[0].length && rows[0][0].charCodeAt(0) === 0xFEFF){
+        rows[0][0] = rows[0][0].slice(1);
+      }
+      return rows;
+    }
+
+    function normalizeHeader(h) {
+      return String(h || "").trim();
+    }
+
+    function findKeyIndex(headers, candidates) {
+      const set = candidates.map(normalizeHeader);
+      for (let i=0; i<headers.length; i++){
+        const h = normalizeHeader(headers[i]);
+        if (set.includes(h)) return i;
+      }
+      return -1;
+    }
+
+    function toNumber(v) {
+      const s = String(v ?? "").trim().replace(/%/g,"");
+      if (s === "") return NaN;
+      const n = Number(s);
+      return Number.isFinite(n) ? n : NaN;
+    }
+
+    function formatRate(v) {
+      // accept either 0.75 or 75 (or string with %)
+      const raw = String(v ?? "").trim();
+      if (raw.endsWith("%")) {
+        const n = toNumber(raw);
+        return Number.isFinite(n) ? `${n.toFixed(1)}%` : "--";
+      }
+      const n = toNumber(raw);
+      if (!Number.isFinite(n)) return "--";
+      const pct = (n <= 1) ? n * 100 : n;
+      return `${pct.toFixed(1)}%`;
+    }
+
+    function rateBarValue(row) {
+      const raw = String(row.winRate ?? "").trim();
+      if (raw.endsWith("%")) {
+        const n = toNumber(raw);
+        return Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 0;
+      }
+      const n = toNumber(raw);
+      if (!Number.isFinite(n)) return 0;
+      const pct = (n <= 1) ? n * 100 : n;
+      return Math.max(0, Math.min(100, pct));
+    }
+
+    function safeText(v) {
+      return (v ?? "").toString();
+    }
+
+    function compare(a, b, key, dir) {
+      const d = (dir === "asc") ? 1 : -1;
+
+      // numeric keys
+      if (key === "順位" || key === "勝利数" || key === "敗北数") {
+        const an = toNumber(a[key]);
+        const bn = toNumber(b[key]);
+        return (an - bn) * d;
+      }
+      if (key === "勝率") {
+        return (rateBarValue(a) - rateBarValue(b)) * d;
+      }
+      if (key === "更新日時") {
+        // try parse date; fallback string
+        const ad = Date.parse(a[key]);
+        const bd = Date.parse(b[key]);
+        if (Number.isFinite(ad) && Number.isFinite(bd)) return (ad - bd) * d;
+        return safeText(a[key]).localeCompare(safeText(b[key]), "ja") * d;
+      }
+      // string
+      return safeText(a[key]).localeCompare(safeText(b[key]), "ja") * d;
+    }
+
+    function render(rows) {
+      els.tbody.innerHTML = "";
+      if (!rows.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="6" class="empty">該当する選手が見つかりません。</td>`;
+        els.tbody.appendChild(tr);
+        return;
+      }
+
+      const frag = document.createDocumentFragment();
+
+      rows.forEach((r, idx) => {
+        const tr = document.createElement("tr");
+        const rank = safeText(r["順位"]);
+        const pid = safeText(r["選手ID"]);
+        const wins = safeText(r["勝利数"]);
+        const losses = safeText(r["敗北数"]);
+        const rate = formatRate(r["勝率"]);
+        const updated = safeText(r["更新日時"]);
+
+        // highlight top 1
+        if (String(rank).trim() === "1" || (idx === 0 && sortState.key === "順位" && sortState.dir === "asc")) {
+          tr.classList.add("top1");
+        }
+
+        const bar = rateBarValue(r);
+
+        tr.innerHTML = `
+          <td class="rankcell"><span class="rank">${rank}</span></td>
+          <td class="idcell"><span class="id">${escapeHTML(pid)}</span></td>
+          <td class="num">${escapeHTML(wins)}</td>
+          <td class="num">${escapeHTML(losses)}</td>
+          <td class="ratecell">
+            <div class="ratebox" aria-label="勝率 ${rate}">
+              <div class="ratebar" style="width:${bar}%"></div>
+              <div class="ratetext">${rate}</div>
+            </div>
+          </td>
+          <td class="time">${escapeHTML(updated)}</td>
+        `;
+        frag.appendChild(tr);
+      });
+
+      els.tbody.appendChild(frag);
+    }
+
+    function escapeHTML(str) {
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    const sortState = { key: "順位", dir: "asc" };
+
+    function apply() {
+      const q = els.search.value.trim().toLowerCase();
+
+      viewRows = allRows.filter(r => {
+        if (!q) return true;
+        return String(r["選手ID"] ?? "").toLowerCase().includes(q);
+      });
+
+      viewRows.sort((a,b) => compare(a,b, sortState.key, sortState.dir));
+      render(viewRows);
+
+      els.rowCount.textContent = `${viewRows.length}`;
+    }
+
+    function setSortFromSelect() {
+      const [k, d] = els.sort.value.split(":");
+      sortState.key = k;
+      sortState.dir = d;
+    }
+
+    async function load() {
+      if (!CSV_URL || CSV_URL.includes("PASTE_YOUR_PUBLIC_CSV_URL_HERE")) {
+        els.note.textContent = "CSV_URL を公開CSVのURLに置き換えてください。";
+        return;
+      }
+
+      els.note.textContent = "取得中…";
+      els.fetchedAt.textContent = nowJSTString();
 
       try {
         const res = await fetch(CSV_URL, { cache: "no-store" });
-        if (!res.ok) throw new Error("CSV取得に失敗しました（公開設定を確認）");
+        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
 
-        const csvText = await res.text();
-        const rows = parseCSV(csvText);
+        const text = await res.text();
+        const rows = csvParse(text);
+        if (rows.length < 2) throw new Error("CSV rows are insufficient.");
 
-        // 1行目はヘッダー想定
-        const data = rows.slice(1).filter(r => r.join("").trim() !== "");
+        const headers = rows[0].map(normalizeHeader);
 
-        tbody.innerHTML = "";
+        // Map indices by expected columns
+        const idxRank = findKeyIndex(headers, HEADER_MAP.rank);
+        const idxId = findKeyIndex(headers, HEADER_MAP.playerId);
+        const idxWins = findKeyIndex(headers, HEADER_MAP.wins);
+        const idxLosses = findKeyIndex(headers, HEADER_MAP.losses);
+        const idxRate = findKeyIndex(headers, HEADER_MAP.winRate);
+        const idxUpd = findKeyIndex(headers, HEADER_MAP.updatedAt);
 
-        // 想定：A Rank / B PlayerID(orName) / C Wins / D Losses / E WinRate / (F UpdatedAt 任意)
-        data.slice(0, 10).forEach((r, i) => {
-          const rank = r[0] || String(i + 1);
-          const player = r[1] || "";
-          const wins = r[2] || "";
-          const losses = r[3] || "";
-          const winrate = r[4] || "";
+        const missing = [];
+        if (idxRank < 0) missing.push("順位");
+        if (idxId < 0) missing.push("選手ID");
+        if (idxWins < 0) missing.push("勝利数");
+        if (idxLosses < 0) missing.push("敗北数");
+        if (idxRate < 0) missing.push("勝率");
+        if (idxUpd < 0) missing.push("更新日時");
 
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${escapeHtml(rank)}</td>
-            <td>${escapeHtml(player)}</td>
-            <td>${escapeHtml(wins)}</td>
-            <td>${escapeHtml(losses)}</td>
-            <td>${escapeHtml(winrate)}</td>
-          `;
-          tbody.appendChild(tr);
-        });
-
-        if (tbody.children.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="5">データがありません</td></tr>`;
-          note.textContent = "※ 公開用シートにデータがありません。";
+        if (missing.length) {
+          els.note.textContent = `CSV列名が一致しません：${missing.join(" / ")}（ヘッダー名を確認）`;
           return;
         }
 
-        // ✅ UpdatedAt がある時だけ表示（無くても落ちない）
-        const updatedAt = (data[0] && data[0][5]) ? data[0][5] : "";
-        note.textContent = updatedAt
-          ? `※ 公開用シートのランキングを自動表示しています（更新：${updatedAt}）`
-          : "※ 公開用シートのランキングを自動表示しています。";
+        allRows = rows.slice(1)
+          .filter(r => r.some(c => String(c ?? "").trim() !== ""))
+          .map(r => ({
+            "順位": r[idxRank] ?? "",
+            "選手ID": r[idxId] ?? "",
+            "勝利数": r[idxWins] ?? "",
+            "敗北数": r[idxLosses] ?? "",
+            "勝率": r[idxRate] ?? "",
+            "更新日時": r[idxUpd] ?? ""
+          }));
 
+        els.note.textContent = "公開シートと連動しています。";
+        setSortFromSelect();
+        apply();
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="5">読み込み失敗：${escapeHtml(e.message)}</td></tr>`;
-        note.textContent = "※ ローカル（file://）で開いていると取得に失敗する場合があります。";
+        console.error(e);
+        els.note.textContent = "取得に失敗しました。CSV公開URLと権限設定を確認してください。";
       }
     }
 
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
-    }
+    // events
+    els.search.addEventListener("input", () => apply());
+    els.sort.addEventListener("change", () => { setSortFromSelect(); apply(); });
+    els.reset.addEventListener("click", () => {
+      els.search.value = "";
+      els.sort.value = "順位:asc";
+      setSortFromSelect();
+      apply();
+    });
 
-    loadRanking();
+    // Reveal animation
+    (function(){
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduce) return;
+
+      const els2 = document.querySelectorAll('.pagehead, .tablecard, .hint');
+      const obs = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add('reveal');
+            obs.unobserve(e.target);
+          }
+        }
+      }, { threshold: 0.12 });
+      els2.forEach(el => obs.observe(el));
+    })();
+
+    load();
   </script>
 </body>
 </html>
