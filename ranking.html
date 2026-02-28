@@ -137,13 +137,12 @@
 
   <script>
     // ============================
-    // 1) Set your CSV URL here
+    // 1) CSV URL (already set)
     // ============================
-    const CSV_URL = "PASTE_YOUR_PUBLIC_CSV_URL_HERE";
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSdXvohXC-6MPzzGi11aSPM_LazB6OkKRyyW8_mIFR8NPY6YEuMyIsgqlPQc7LJj26RSR9TG5HSI83-/pub?gid=0&single=true&output=csv";
 
     // Expected header names in Japanese:
     // 「順位 / 選手ID / 勝利数 / 敗北数 / 勝率 / 更新日時」
-    // If your sheet differs, adjust HEADER_MAP below.
     const HEADER_MAP = {
       rank: ["順位", "Rank"],
       playerId: ["選手ID", "選手Id", "PlayerID", "ID"],
@@ -177,7 +176,6 @@
     }
 
     function csvParse(text) {
-      // Robust CSV parser (handles quotes/newlines/commas)
       const rows = [];
       let cur = [];
       let val = "";
@@ -204,18 +202,15 @@
           if (c === '\r' && n === '\n') i++;
           cur.push(val);
           val = "";
-          // skip empty last line
           if (cur.length > 1 || (cur.length === 1 && cur[0] !== "")) rows.push(cur);
           cur = [];
           continue;
         }
         val += c;
       }
-      // last cell
       cur.push(val);
       if (cur.length > 1 || (cur.length === 1 && cur[0] !== "")) rows.push(cur);
 
-      // trim BOM
       if (rows.length && rows[0].length && rows[0][0].charCodeAt(0) === 0xFEFF){
         rows[0][0] = rows[0][0].slice(1);
       }
@@ -243,7 +238,6 @@
     }
 
     function formatRate(v) {
-      // accept either 0.75 or 75 (or string with %)
       const raw = String(v ?? "").trim();
       if (raw.endsWith("%")) {
         const n = toNumber(raw);
@@ -274,7 +268,6 @@
     function compare(a, b, key, dir) {
       const d = (dir === "asc") ? 1 : -1;
 
-      // numeric keys
       if (key === "順位" || key === "勝利数" || key === "敗北数") {
         const an = toNumber(a[key]);
         const bn = toNumber(b[key]);
@@ -284,15 +277,24 @@
         return (rateBarValue(a) - rateBarValue(b)) * d;
       }
       if (key === "更新日時") {
-        // try parse date; fallback string
         const ad = Date.parse(a[key]);
         const bd = Date.parse(b[key]);
         if (Number.isFinite(ad) && Number.isFinite(bd)) return (ad - bd) * d;
         return safeText(a[key]).localeCompare(safeText(b[key]), "ja") * d;
       }
-      // string
       return safeText(a[key]).localeCompare(safeText(b[key]), "ja") * d;
     }
+
+    function escapeHTML(str) {
+      return String(str ?? "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    const sortState = { key: "順位", dir: "asc" };
 
     function render(rows) {
       els.tbody.innerHTML = "";
@@ -313,23 +315,21 @@
         const losses = safeText(r["敗北数"]);
         const rate = formatRate(r["勝率"]);
         const updated = safeText(r["更新日時"]);
+        const bar = rateBarValue(r);
 
-        // highlight top 1
         if (String(rank).trim() === "1" || (idx === 0 && sortState.key === "順位" && sortState.dir === "asc")) {
           tr.classList.add("top1");
         }
 
-        const bar = rateBarValue(r);
-
         tr.innerHTML = `
-          <td class="rankcell"><span class="rank">${rank}</span></td>
+          <td class="rankcell"><span class="rank">${escapeHTML(rank)}</span></td>
           <td class="idcell"><span class="id">${escapeHTML(pid)}</span></td>
           <td class="num">${escapeHTML(wins)}</td>
           <td class="num">${escapeHTML(losses)}</td>
           <td class="ratecell">
-            <div class="ratebox" aria-label="勝率 ${rate}">
+            <div class="ratebox" aria-label="勝率 ${escapeHTML(rate)}">
               <div class="ratebar" style="width:${bar}%"></div>
-              <div class="ratetext">${rate}</div>
+              <div class="ratetext">${escapeHTML(rate)}</div>
             </div>
           </td>
           <td class="time">${escapeHTML(updated)}</td>
@@ -339,17 +339,6 @@
 
       els.tbody.appendChild(frag);
     }
-
-    function escapeHTML(str) {
-      return String(str ?? "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
-    }
-
-    const sortState = { key: "順位", dir: "asc" };
 
     function apply() {
       const q = els.search.value.trim().toLowerCase();
@@ -372,11 +361,7 @@
     }
 
     async function load() {
-      if (!CSV_URL || CSV_URL.includes("PASTE_YOUR_PUBLIC_CSV_URL_HERE")) {
-        els.note.textContent = "CSV_URL を公開CSVのURLに置き換えてください。";
-        return;
-      }
-
+      // This guard will no longer trigger since CSV_URL is set
       els.note.textContent = "取得中…";
       els.fetchedAt.textContent = nowJSTString();
 
@@ -390,7 +375,6 @@
 
         const headers = rows[0].map(normalizeHeader);
 
-        // Map indices by expected columns
         const idxRank = findKeyIndex(headers, HEADER_MAP.rank);
         const idxId = findKeyIndex(headers, HEADER_MAP.playerId);
         const idxWins = findKeyIndex(headers, HEADER_MAP.wins);
@@ -431,7 +415,6 @@
       }
     }
 
-    // events
     els.search.addEventListener("input", () => apply());
     els.sort.addEventListener("change", () => { setSortFromSelect(); apply(); });
     els.reset.addEventListener("click", () => {
@@ -441,7 +424,6 @@
       apply();
     });
 
-    // Reveal animation
     (function(){
       const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (reduce) return;
